@@ -25,7 +25,10 @@ routers.post('/api/shorturl/new', async(ctx, next) => {
     if(await is_good_url(ctx.state.url))
         await next();
     else
+    {
+        ctx.type = 'json';
         ctx.body = JSON.stringify(ctx.state.err);
+    }
 });
 
 routers.post('/api/shorturl/new', async(ctx, next) => {
@@ -43,6 +46,7 @@ routers.post('/api/shorturl/new', async(ctx, next) => {
                 "short_url" : (await find_db({})).length+1 //shortened number is incremented to store new
             };
             await db.insert(inserted_obj);
+            ctx.type = 'json';
             ctx.body = JSON.stringify(inserted_obj);
         } else {
             let short_url = (await find_db({"original_url" : url}))[0]["short_url"];
@@ -50,12 +54,14 @@ routers.post('/api/shorturl/new', async(ctx, next) => {
                 "original_url" : url,
                 "short_url" : short_url
             };
+            ctx.type = 'json';
             ctx.body = obj;
         }
     } else { //if hostname do not exist
         ctx.state.err = {
             "error" : "invalid Hostname"
         };
+        ctx.type = 'json';
         ctx.body = JSON.stringify(ctx.state.err);
     }
 });
@@ -68,6 +74,7 @@ routers.get('/api/shorturl/:id', async(ctx) => {
         ctx.state.err = {
             "Error" : "Wrong Format"
         };
+        ctx.type = 'json';
         ctx.body = JSON.stringify(ctx.state.err);
     } else {
         let exist_shorturl = await find_db({"short_url" : +id}); //if requested shortened url is exist
